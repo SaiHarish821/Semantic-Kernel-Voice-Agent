@@ -282,14 +282,11 @@ async def _seed_admin_user(db: aiosqlite.Connection) -> None:
     if count > 0:
         return
 
-    # Inline bcrypt hash to avoid importing auth at DB init time
     try:
-        from passlib.context import CryptContext
-        _ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
-        pw_hash = _ctx.hash("Admin@123")
+        import bcrypt as _bcrypt
+        pw_hash = _bcrypt.hashpw(b"Admin@123", _bcrypt.gensalt()).decode("utf-8")
     except ImportError:
-        # passlib not yet installed — skip admin seed (will happen after pip install)
-        logger.warning("passlib_not_installed_skipping_admin_seed")
+        logger.warning("bcrypt_not_installed_skipping_admin_seed")
         return
 
     await db.execute(
