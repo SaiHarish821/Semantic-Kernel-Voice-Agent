@@ -27,15 +27,19 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=None, help="Override APP_PORT")
     args = parser.parse_args()
 
+    import os
+
     settings = get_settings()
 
-    # CLI overrides take precedence
+    # CLI overrides or PORT env var (e.g. Render/Heroku) take precedence
     if args.env:
         settings.app_env = args.env
     if args.host:
         settings.app_host = args.host
     if args.port:
         settings.app_port = args.port
+    elif os.getenv("PORT"):
+        settings.app_port = int(os.getenv("PORT"))
 
     configure_logging(settings.app_log_level)
 

@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: sainsburys-voice-agent
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python run.py --env production
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: AZURE_OPENAI_ENDPOINT
+        sync: false
+      - key: AZURE_OPENAI_API_KEY
+        sync: false
+      - key: AZURE_OPENAI_REALTIME_DEPLOYMENT
+        value: gpt-realtime
+      - key: AZURE_OPENAI_API_VERSION
+        value: 2025-04-01-preview
+      - key: AZURE_OPENAI_CHAT_DEPLOYMENT
+        value: gpt-5
+      - key: VOICE_NAME
+        value: alloy
