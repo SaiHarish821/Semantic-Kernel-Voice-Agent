@@ -65,8 +65,9 @@
 
       <!-- Right: message viewer -->
       <section aria-label="Conversation messages">
-        <div class="section-header">
+        <div class="section-header" id="chat-header" style="align-items:center;flex-wrap:wrap;gap:var(--space-sm)">
           <h2 class="section-title" id="chat-title">Select a conversation</h2>
+          <!-- Delete button injected here by dashboard.js when a session is open -->
         </div>
         <div class="chat-panel" id="chat-panel">
           <div class="empty-state" id="chat-empty">

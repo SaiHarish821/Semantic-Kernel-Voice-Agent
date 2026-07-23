@@ -63,7 +63,7 @@ function renderConversationList(sessions) {
   if (sessions.length === 0) {
     $convList.innerHTML = `
       <div class="empty-state">
-        <div class="empty-state-icon">🎙️</div>
+        <div class="empty-state-icon">🎤</div>
         <p>No conversations yet. <a href="/" style="color:var(--orange-light)">Start talking to Sam!</a></p>
       </div>`;
     return;
@@ -82,9 +82,9 @@ function renderConversationList(sessions) {
           <div class="conv-title" id="conv-title-${s.id}">${escHtml(s.title)}</div>
           <div class="conv-meta">${ago} · ${msgs} message${msgs !== 1 ? 's' : ''}${dur ? ' · ' + dur : ''}</div>
         </div>
-        <div class="conv-actions">
-          <button class="icon-btn" title="Rename" onclick="event.stopPropagation();openRename(${s.id},'${escHtml(s.title).replace(/'/g,"\\'")}')">✏️</button>
-          <button class="icon-btn danger" title="Delete" onclick="event.stopPropagation();deleteSession(${s.id})">🗑️</button>
+        <div class="conv-actions" style="opacity:1">
+          <button class="icon-btn" title="Rename" onclick="event.stopPropagation();openRename(${s.id},'${escHtml(s.title).replace(/'/g,"\\'")}')">&#9998;</button>
+          <button class="icon-btn danger" title="Delete conversation" aria-label="Delete conversation" onclick="event.stopPropagation();deleteSession(${s.id})">🗑️</button>
         </div>
       </div>`;
   }).join('');
@@ -102,6 +102,9 @@ async function selectSession(sessionId) {
   $chatMessages.style.display = 'flex';
   $chatMessages.innerHTML = '<div class="skeleton" style="height:40px;margin:8px"></div><div class="skeleton" style="height:60px;margin:8px"></div>';
 
+  // Show delete button in header
+  showChatDeleteBtn(sessionId);
+
   try {
     const res = await authFetch(`/api/v1/conversations/${sessionId}`);
     const data = await res.json();
@@ -109,7 +112,7 @@ async function selectSession(sessionId) {
     $chatTitle.textContent = sess ? sess.title : 'Conversation';
 
     if (!data.messages || data.messages.length === 0) {
-      $chatMessages.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎙️</div><p>This session has no messages yet.</p></div>';
+      $chatMessages.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎤</div><p>This session has no messages yet.</p></div>';
       return;
     }
 
@@ -124,6 +127,23 @@ async function selectSession(sessionId) {
   } catch (err) {
     $chatMessages.innerHTML = `<p style="color:var(--error);font-size:13px;padding:var(--space-md)">Failed to load messages.</p>`;
   }
+}
+
+// Show/hide delete button in the chat panel header
+function showChatDeleteBtn(sessionId) {
+  const existing = document.getElementById('chat-delete-btn');
+  if (existing) existing.remove();
+
+  const btn = document.createElement('button');
+  btn.id = 'chat-delete-btn';
+  btn.className = 'icon-btn danger';
+  btn.title = 'Delete this conversation';
+  btn.setAttribute('aria-label', 'Delete this conversation');
+  btn.innerHTML = '🗑️ Delete';
+  btn.style.cssText = 'width:auto;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:4px;opacity:1';
+  btn.onclick = () => deleteSession(sessionId);
+
+  $chatTitle.insertAdjacentElement('afterend', btn);
 }
 
 // ── Rename ────────────────────────────────────────────────────────────────────
@@ -166,7 +186,8 @@ function closeRename() {
 async function deleteSession(sessionId) {
   if (!confirm('Delete this conversation? This cannot be undone.')) return;
   try {
-    await authFetch(`/api/v1/conversations/${sessionId}`, { method: 'DELETE' });
+    const res = await authFetch(`/api/v1/conversations/${sessionId}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Delete failed');
     allSessions = allSessions.filter(s => s.id !== sessionId);
     renderConversationList(allSessions);
     if (activeSessionId === sessionId) {
@@ -174,6 +195,8 @@ async function deleteSession(sessionId) {
       $chatMessages.style.display = 'none';
       $chatEmpty.style.display = 'flex';
       $chatTitle.textContent = 'Select a conversation';
+      const btn = document.getElementById('chat-delete-btn');
+      if (btn) btn.remove();
     }
   } catch { alert('Failed to delete conversation.'); }
 }
