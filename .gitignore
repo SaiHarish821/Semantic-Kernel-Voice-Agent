@@ -1,3 +1,6 @@
+# Render CLI local binary
+render_bin/
+
 # Environment variables (contains secret keys!)
 .env
 *.env
