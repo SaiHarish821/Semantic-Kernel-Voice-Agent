@@ -52,6 +52,12 @@ class Settings(BaseSettings):
     max_context_turns: int = 6
     session_timeout_seconds: int = 300
 
+    # ── JWT / Auth ───────────────────────────────────────────────────────────
+    jwt_secret_key: str = "change-me-to-a-long-random-secret-in-production"
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60
+    refresh_token_expire_days: int = 30
+
     # ── CORS ─────────────────────────────────────────────────────────────────
     cors_origins: str = "http://localhost:8000,http://127.0.0.1:8000"
 

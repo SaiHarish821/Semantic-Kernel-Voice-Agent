@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/auth.css" />
 </head>
 <body>
 
@@ -34,6 +35,12 @@
         <div class="status-badge" id="status-badge" role="status" aria-live="polite">
           <span class="status-dot" id="status-dot"></span>
           <span class="status-label" id="status-label">Disconnected</span>
+        </div>
+        <!-- Auth nav -->
+        <div id="auth-nav" style="display:flex;align-items:center;gap:8px;margin-left:8px">
+          <a href="/login" class="nav-link" id="nav-login" style="font-size:12px">Sign in</a>
+          <a href="/dashboard" class="nav-link" id="nav-dashboard" style="display:none;font-size:12px">📋 History</a>
+          <button class="nav-btn" id="nav-logout" style="display:none;font-size:12px" onclick="authLogout()">Sign out</button>
         </div>
       </div>
     </div>
@@ -153,6 +160,7 @@
 <!-- ── Toast notifications ─────────────────────────────────── -->
 <div class="toast-container" id="toast-container" aria-live="assertive" role="alert"></div>
 
+<script src="/static/auth.js" defer></script>
 <script src="/static/app.js" defer></script>
 </body>
 </html>

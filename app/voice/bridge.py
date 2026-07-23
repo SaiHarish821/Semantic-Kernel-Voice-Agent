@@ -45,6 +45,9 @@ from app.config import get_settings
 from app.logging_config import get_logger
 from app.voice.session_manager import SessionStatus, VoiceSession
 
+# Conversation persistence (imported lazily to avoid circular imports)
+import app.conversation.service as _conv_svc
+
 logger = get_logger(__name__)
 _settings = get_settings()
 
@@ -264,6 +267,16 @@ class VoiceLiveBridge:
                     "role": "user",
                     "text": transcript,
                 })
+                # Persist to DB for authenticated sessions
+                if self._session.db_session_id:
+                    try:
+                        await _conv_svc.add_message(
+                            session_id=self._session.db_session_id,
+                            role="user",
+                            content=transcript,
+                        )
+                    except Exception as _e:
+                        logger.warning("conv_persist_error", error=str(_e))
 
         elif event_type == "response.audio_transcript.delta":
             # Streaming assistant transcript
@@ -282,6 +295,16 @@ class VoiceLiveBridge:
                     "role": "assistant",
                     "text": transcript,
                 })
+                # Persist to DB for authenticated sessions
+                if self._session.db_session_id:
+                    try:
+                        await _conv_svc.add_message(
+                            session_id=self._session.db_session_id,
+                            role="assistant",
+                            content=transcript,
+                        )
+                    except Exception as _e:
+                        logger.warning("conv_persist_error", error=str(_e))
 
         elif event_type == "response.output_item.added":
             item = event.get("item", {})

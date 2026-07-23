@@ -14,10 +14,15 @@
 'use strict';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
-const WS_URL = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/voice`;
+const WS_BASE_URL = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/voice`;
 const SAMPLE_RATE = 24000;          // Must match backend voice.audio_sample_rate
 const CHUNK_MS    = 100;            // Audio chunk interval in ms
 const MAX_BACKOFF = 8000;           // Max WS reconnect delay ms
+
+function getWsUrl() {
+  const token = getAccessToken ? getAccessToken() : null;
+  return token ? `${WS_BASE_URL}?token=${encodeURIComponent(token)}` : WS_BASE_URL;
+}
 
 // ── DOM refs ───────────────────────────────────────────────────────────────────
 const $micBtn        = document.getElementById('mic-btn');
@@ -156,7 +161,7 @@ function connectWS() {
   if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
 
   setStatus('connecting', 'Connecting…');
-  ws = new WebSocket(WS_URL);
+  ws = new WebSocket(getWsUrl());
 
   ws.addEventListener('open', () => {
     setStatus('connected', 'Ready');
@@ -634,9 +639,27 @@ setInterval(() => {
   }
 }, 15000);
 
+// ── Auth nav state ────────────────────────────────────────────────────────────
+function initAuthNav() {
+  const loggedIn = typeof isLoggedIn === 'function' && isLoggedIn();
+  const navLogin    = document.getElementById('nav-login');
+  const navDashboard= document.getElementById('nav-dashboard');
+  const navLogout   = document.getElementById('nav-logout');
+  if (!navLogin) return;
+  navLogin.style.display    = loggedIn ? 'none' : 'inline-flex';
+  navDashboard.style.display= loggedIn ? 'inline-flex' : 'none';
+  navLogout.style.display   = loggedIn ? 'inline-flex' : 'none';
+}
+
+function authLogout() {
+  if (typeof logout === 'function') logout();
+  else { localStorage.clear(); location.href = '/login'; }
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 (async function init() {
   setStatus('', 'Disconnected');
+  initAuthNav();
   await Promise.all([loadOffers(), loadStoreHours()]);
   connectWS();
 })();

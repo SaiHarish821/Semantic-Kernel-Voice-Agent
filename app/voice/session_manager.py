@@ -56,6 +56,10 @@ class VoiceSession:
     user_agent: Optional[str] = None
     remote_ip: Optional[str] = None
 
+    # Authenticated user context (None for anonymous sessions)
+    user_id: Optional[int] = None
+    db_session_id: Optional[int] = None   # conversation_sessions.id
+
     def touch(self) -> None:
         """Update last activity timestamp."""
         self.last_activity = time.time()

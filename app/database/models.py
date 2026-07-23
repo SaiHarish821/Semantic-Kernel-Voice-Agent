@@ -2,12 +2,15 @@
 app/database/models.py — SQLite schema DDL.
 
 Tables:
-  products      - Sainsbury's product catalogue
-  stores        - Store locations and hours
-  orders        - Customer orders (demo data)
-  offers        - Current promotions and Nectar deals
-  faqs          - Frequently asked questions
-  escalations   - Logged escalation events
+  products              - Sainsbury's product catalogue
+  stores                - Store locations and hours
+  orders                - Customer orders (demo data)
+  offers                - Current promotions and Nectar deals
+  faqs                  - Frequently asked questions
+  escalations           - Logged escalation events
+  users                 - Authenticated user accounts
+  conversation_sessions - Grouped voice conversation sessions per user
+  conversation_messages - Individual transcript turns per session
 """
 
 CREATE_TABLES_SQL = """
@@ -100,4 +103,41 @@ CREATE TABLE IF NOT EXISTS escalations (
     status          TEXT DEFAULT 'pending',
     created_at      TEXT DEFAULT (datetime('now'))
 );
+
+-- ── Users ────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS users (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    name            TEXT NOT NULL,
+    email           TEXT NOT NULL UNIQUE,
+    password_hash   TEXT NOT NULL,
+    role            TEXT NOT NULL DEFAULT 'user',
+    is_active       INTEGER NOT NULL DEFAULT 1,
+    created_at      TEXT DEFAULT (datetime('now')),
+    last_login      TEXT
+);
+
+-- ── Conversation Sessions ────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS conversation_sessions (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id         INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title           TEXT NOT NULL DEFAULT 'Voice Conversation',
+    created_at      TEXT DEFAULT (datetime('now')),
+    updated_at      TEXT DEFAULT (datetime('now')),
+    message_count   INTEGER NOT NULL DEFAULT 0,
+    duration_seconds REAL DEFAULT 0,
+    token_usage     INTEGER DEFAULT 0
+);
+
+-- ── Conversation Messages ────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS conversation_messages (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id      INTEGER NOT NULL REFERENCES conversation_sessions(id) ON DELETE CASCADE,
+    role            TEXT NOT NULL,
+    content         TEXT NOT NULL,
+    timestamp       TEXT DEFAULT (datetime('now')),
+    latency_ms      INTEGER DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS idx_conv_sessions_user ON conversation_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_conv_messages_session ON conversation_messages(session_id);
 """

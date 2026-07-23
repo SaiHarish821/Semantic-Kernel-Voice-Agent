@@ -61,10 +61,10 @@ def create_app() -> FastAPI:
     # HTTP routes
     app.include_router(router)
 
-    # WebSocket voice endpoint
+    # WebSocket voice endpoint — accepts optional JWT token for authenticated history
     @app.websocket("/ws/voice")
-    async def ws_voice(websocket: WebSocket) -> None:
-        await voice_websocket_handler(websocket)
+    async def ws_voice(websocket: WebSocket, token: str | None = None) -> None:
+        await voice_websocket_handler(websocket, token=token)
 
     return app
 

@@ -196,6 +196,7 @@ async def seed_all(db: aiosqlite.Connection) -> None:
     await _seed_orders(db)
     await _seed_offers(db)
     await _seed_faqs(db)
+    await _seed_admin_user(db)
     await db.commit()
     logger.info("database_seeded")
 
@@ -272,3 +273,27 @@ async def _seed_faqs(db: aiosqlite.Connection) -> None:
         FAQS,
     )
     logger.info("seeded_faqs", count=len(FAQS))
+
+
+async def _seed_admin_user(db: aiosqlite.Connection) -> None:
+    """Create a default admin user if no admin exists. Idempotent."""
+    async with db.execute("SELECT COUNT(*) FROM users WHERE role = 'admin'") as cur:
+        count = (await cur.fetchone())[0]
+    if count > 0:
+        return
+
+    # Inline bcrypt hash to avoid importing auth at DB init time
+    try:
+        from passlib.context import CryptContext
+        _ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        pw_hash = _ctx.hash("Admin@123")
+    except ImportError:
+        # passlib not yet installed — skip admin seed (will happen after pip install)
+        logger.warning("passlib_not_installed_skipping_admin_seed")
+        return
+
+    await db.execute(
+        "INSERT OR IGNORE INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)",
+        ("Admin", "admin@sainsburys.co.uk", pw_hash, "admin"),
+    )
+    logger.info("seeded_admin_user", email="admin@sainsburys.co.uk")

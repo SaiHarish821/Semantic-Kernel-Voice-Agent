@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Sainsbury's AI Voice Agent</title>
+  <meta name="description" content="View your conversation history and start new voice sessions with Sam, your Sainsbury's AI assistant." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/auth.css" />
+</head>
+<body>
+<canvas id="bg-canvas" aria-hidden="true"></canvas>
+
+<div class="page-layout" style="position:relative;z-index:1">
+
+  <!-- Header -->
+  <header class="page-header" role="banner">
+    <div class="page-header-inner">
+      <a href="/" class="page-header-brand">
+        <div class="brand-logo" aria-label="Sainsbury's"><span class="logo-s">S</span></div>
+        <div>
+          <div class="page-header-title">Sainsbury's</div>
+          <div class="page-header-sub">AI Voice Agent</div>
+        </div>
+      </a>
+      <nav class="page-header-nav" role="navigation" aria-label="Main navigation">
+        <a href="/" class="nav-link">🎙️ Voice</a>
+        <a href="/dashboard" class="nav-link active">📋 History</a>
+        <div class="user-chip" id="user-chip">
+          <div class="user-avatar" id="user-avatar-initial">?</div>
+          <span id="user-name-display">Loading…</span>
+        </div>
+        <button class="nav-btn" id="logout-btn" onclick="logout()">Sign out</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="page-content" role="main">
+    <div style="display:grid;grid-template-columns:360px 1fr;gap:var(--space-xl);align-items:start">
+
+      <!-- Left: conversation list -->
+      <section aria-label="Conversation history">
+        <div class="section-header">
+          <h1 class="section-title">Conversations</h1>
+          <a href="/" class="auth-btn" style="width:auto;padding:8px 16px;font-size:13px;text-decoration:none">+ New</a>
+        </div>
+
+        <!-- Search -->
+        <div class="search-bar" style="margin-bottom:var(--space-md)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);flex-shrink:0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="search-input" placeholder="Search conversations…" aria-label="Search conversations" />
+        </div>
+
+        <div id="conv-list" class="conv-list" aria-label="Conversation list" aria-live="polite">
+          <!-- Skeleton loaders -->
+          <div class="skeleton" style="height:64px"></div>
+          <div class="skeleton" style="height:64px"></div>
+          <div class="skeleton" style="height:64px"></div>
+        </div>
+      </section>
+
+      <!-- Right: message viewer -->
+      <section aria-label="Conversation messages">
+        <div class="section-header">
+          <h2 class="section-title" id="chat-title">Select a conversation</h2>
+        </div>
+        <div class="chat-panel" id="chat-panel">
+          <div class="empty-state" id="chat-empty">
+            <div class="empty-state-icon">💬</div>
+            <p>Select a conversation from the left to view its transcript, or <a href="/" style="color:var(--orange-light)">start a new voice session</a>.</p>
+          </div>
+          <div id="chat-messages" class="chat-messages" style="display:none" role="log" aria-label="Conversation transcript" aria-live="polite"></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- Rename modal -->
+<div id="rename-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center">
+  <div class="auth-card" style="max-width:380px;width:90%;gap:var(--space-md)">
+    <h2 style="font-size:18px;font-weight:700">Rename conversation</h2>
+    <input type="text" id="rename-input" class="form-input" placeholder="New title…" />
+    <div style="display:flex;gap:var(--space-sm)">
+      <button class="auth-btn" id="rename-confirm" style="flex:1">Save</button>
+      <button class="auth-btn auth-btn-ghost" id="rename-cancel" style="flex:1">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/auth.js"></script>
+<script src="/static/dashboard.js"></script>
+</body>
+</html>
