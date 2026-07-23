@@ -1,0 +1,31 @@
+# ─────────────────────────────────────────────────────────────
+#  Sainsbury's AI Voice Agent — Python Dependencies
+# ─────────────────────────────────────────────────────────────
+
+# Web framework
+fastapi>=0.115.5
+uvicorn[standard]>=0.32.1
+websockets>=13.1
+python-multipart>=0.0.12
+
+# Azure Semantic Kernel (latest stable)
+semantic-kernel>=1.44.0
+
+# Azure OpenAI (used by SK connector + realtime WebSocket)
+openai>=1.57.0
+azure-identity>=1.19.0
+
+# Async SQLite
+aiosqlite>=0.20.0
+
+# Configuration
+python-dotenv>=1.0.1
+pydantic>=2.10.0
+pydantic-settings>=2.6.1
+
+# Structured logging
+structlog>=24.4.0
+
+# Utilities
+httpx>=0.28.0
+anyio>=4.7.0

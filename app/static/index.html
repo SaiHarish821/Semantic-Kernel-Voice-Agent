@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sam — Sainsbury's AI Voice Assistant</title>
+  <meta name="description" content="Talk to Sam, your intelligent Sainsbury's voice assistant. Get help with products, orders, offers, store hours and more — hands-free." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<!-- ── Background canvas ──────────────────────────────────────── -->
+<canvas id="bg-canvas" aria-hidden="true"></canvas>
+
+<!-- ── App shell ──────────────────────────────────────────────── -->
+<div class="app" id="app">
+
+  <!-- Header -->
+  <header class="header" role="banner">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-logo" aria-label="Sainsbury's">
+          <span class="logo-s">S</span>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">Sainsbury's</span>
+          <span class="brand-sub">AI Voice Assistant</span>
+        </div>
+      </div>
+      <div class="header-status">
+        <div class="status-badge" id="status-badge" role="status" aria-live="polite">
+          <span class="status-dot" id="status-dot"></span>
+          <span class="status-label" id="status-label">Disconnected</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main layout -->
+  <main class="main-layout" role="main">
+
+    <!-- ── Left column: voice interface ───────────────────────── -->
+    <section class="voice-panel" aria-label="Voice Interface">
+
+      <!-- Agent avatar -->
+      <div class="agent-avatar-wrap">
+        <div class="agent-avatar" id="agent-avatar" aria-hidden="true">
+          <div class="avatar-rings">
+            <div class="ring ring-1"></div>
+            <div class="ring ring-2"></div>
+            <div class="ring ring-3"></div>
+          </div>
+          <div class="avatar-face">
+            <span class="avatar-icon">🎙️</span>
+          </div>
+        </div>
+        <div class="agent-name">Sam</div>
+        <div class="agent-tagline" id="agent-tagline">Your Sainsbury's assistant</div>
+      </div>
+
+      <!-- Waveform visualiser -->
+      <div class="waveform-container" id="waveform-container" aria-hidden="true">
+        <canvas id="waveform-canvas" width="320" height="64"></canvas>
+      </div>
+
+      <!-- Microphone button -->
+      <div class="mic-wrap">
+        <button
+          class="mic-btn"
+          id="mic-btn"
+          aria-label="Start voice conversation"
+          aria-pressed="false"
+          title="Click to talk"
+        >
+          <span class="mic-icon" id="mic-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M12 1C10.34 1 9 2.34 9 4V12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12V4C15 2.34 13.66 1 12 1Z" fill="currentColor"/>
+              <path d="M19 12C19 15.87 15.87 19 12 19C8.13 19 5 15.87 5 12H3C3 16.97 6.92 21.07 12 21.5V23H14V21.5C19.08 21.07 23 16.97 23 12H19Z" fill="currentColor"/>
+            </svg>
+          </span>
+          <span class="mic-pulse" id="mic-pulse" aria-hidden="true"></span>
+        </button>
+        <p class="mic-hint" id="mic-hint">Click to start talking</p>
+      </div>
+
+      <!-- Quick action chips -->
+      <div class="chips" role="list" aria-label="Quick questions">
+        <button class="chip" role="listitem" data-query="What milk do you have on offer?">🥛 Milk offers</button>
+        <button class="chip" role="listitem" data-query="What are your opening hours today?">🕐 Opening hours</button>
+        <button class="chip" role="listitem" data-query="What Nectar deals do you have?">⭐ Nectar deals</button>
+        <button class="chip" role="listitem" data-query="How do I return an item?">↩️ Returns policy</button>
+        <button class="chip" role="listitem" data-query="I need to speak to someone">🧑 Talk to agent</button>
+      </div>
+
+    </section>
+
+    <!-- ── Right column: sidebar ───────────────────────────────── -->
+    <aside class="sidebar" aria-label="Store information and offers">
+
+      <!-- Transcript panel -->
+      <div class="sidebar-card transcript-card">
+        <div class="card-header">
+          <span class="card-icon">💬</span>
+          <h2 class="card-title">Conversation</h2>
+          <button class="card-action" id="clear-btn" aria-label="Clear conversation">Clear</button>
+        </div>
+        <div class="transcript-list" id="transcript-list" role="log" aria-live="polite" aria-label="Conversation transcript">
+          <div class="transcript-empty" id="transcript-empty">
+            <span class="empty-icon">🎙️</span>
+            <p>Your conversation will appear here once you start talking.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current offers -->
+      <div class="sidebar-card offers-card">
+        <div class="card-header">
+          <span class="card-icon">🏷️</span>
+          <h2 class="card-title">Today's Offers</h2>
+        </div>
+        <div class="offers-list" id="offers-list" aria-label="Current promotions">
+          <div class="loading-shimmer"></div>
+          <div class="loading-shimmer"></div>
+          <div class="loading-shimmer"></div>
+        </div>
+      </div>
+
+      <!-- Store hours -->
+      <div class="sidebar-card hours-card">
+        <div class="card-header">
+          <span class="card-icon">🏪</span>
+          <h2 class="card-title">Store Hours</h2>
+          <span class="card-store-name" id="store-name-label">Islington</span>
+        </div>
+        <div class="hours-grid" id="hours-grid">
+          <div class="loading-shimmer"></div>
+        </div>
+        <div class="open-badge" id="open-badge" aria-live="polite"></div>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer" role="contentinfo">
+    <p>Powered by <strong>Azure OpenAI Realtime</strong> · <strong>Semantic Kernel</strong> · <strong>FastAPI</strong></p>
+  </footer>
+</div>
+
+<!-- ── Toast notifications ─────────────────────────────────── -->
+<div class="toast-container" id="toast-container" aria-live="assertive" role="alert"></div>
+
+<script src="/static/app.js" defer></script>
+</body>
+</html>
